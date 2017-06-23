@@ -1,2 +1,6 @@
-data/**/*
-logs/**/*
+# car_stats
+car_stats/data/**/*
+car_stats/logs/**/*
+
+# tutorials
+tutorials/data/**/*

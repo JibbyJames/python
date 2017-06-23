@@ -39,7 +39,7 @@ req_headers = {
 
 cars_dir = os.getcwd() + "\\data\\car_csvs\\"
 
-start_id = 45774257
+start_id = 45749258
 total_id_count = 5000
 chunk_size = 100
 num_of_chunks = int(total_id_count / chunk_size)
