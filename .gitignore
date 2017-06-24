@@ -4,3 +4,6 @@ car_stats/logs/**/*
 
 # tutorials
 tutorials/data/**/*
+
+# whatsapp
+whatsapp/data/**/*
