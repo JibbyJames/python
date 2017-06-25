@@ -1,6 +1,7 @@
 # car_stats
 car_stats/data/**/*
 car_stats/logs/**/*
+car_stats/__pycache__/**/*
 
 # tutorials
 tutorials/data/**/*
