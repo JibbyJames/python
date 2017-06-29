@@ -59,15 +59,18 @@ all_stats = car_data.describe()
 #make_prices['mean'].plot(kind='bar', logy=True)
 
 # Distrubution of price by year, on a logarithmic scale.
-price_by_make = car_data.sample(8000).pivot_table(index="vehicle_id", columns='vehicle_make', values="vehicle_price", aggfunc='mean')
-meds = price_by_make.median()
-meds = meds.sort_values(ascending=False)
-price_by_make = price_by_make[meds.index]
-ax = price_by_make.plot(kind='box', vert=False, figsize=[10,20], stacked=True, colormap='Accent', rot=0, logx=True)
+#price_by_make = car_data.sample(8000).pivot_table(index="vehicle_id", columns='vehicle_make', values="vehicle_price", aggfunc='mean')
+#meds = price_by_make.median()
+#meds = meds.sort_values(ascending=False)
+#price_by_make = price_by_make[meds.index]
+#ax = price_by_make.plot(kind='box', vert=False, figsize=[10,20], stacked=True, colormap='Accent', rot=0, logx=True)
+#
+#fig = ax.get_figure()
+#fig.savefig('car_make_prices.png')
 
-fig = ax.get_figure()
-fig.savefig('car_make_prices.png')
+years = car_data.groupby(['vehicle_make'])['vehicle_year'].describe().unstack()
 
+tmp = car_data.groupby(['dealer_name']).mean()
 
 
 
