@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
 import glob
+import numpy as np
+import plotly
+import plotly.plotly as py
+import plotly.graph_objs as go
 import car_columns as cc
 import pandas as pd
+
+# Set up graphing library
+plotly.tools.set_credentials_file(username='jibbyjames', api_key='odf0iY1IVJsyIAvlP7IQ')
 
 # Read data from all files in /merged directory
 car_csv_path = os.getcwd() + "\\data\\car_csvs\\merged\\"
@@ -31,11 +38,53 @@ car_data = car_data.set_index(['id'])
 #hmm = car_data_nans[["index1", "not_null"]]
 #hmm.plot(kind="scatter", x="index1", y="not_null", figsize=(15,5))
 
+# car_models contains a list of unique car models, rather than motors.co.uk records
+car_data['year'] = car_data['vehicle_year']
+car_data['make'] = car_data['vehicle_make']
+car_data['model'] = car_data['vehicle_model']
+car_data['trim'] = car_data['vehicle_trim']
+car_data['fuel_type'] = car_data['vehicle_fuel_type']
+car_data['transmission'] = car_data['vehicle_transmission']
+car_models = car_data.set_index(['vehicle_year','vehicle_make','vehicle_model','vehicle_trim', 'vehicle_fuel_type', 'vehicle_transmission'])
+car_models = car_models[~car_models.index.duplicated(keep='first')]
+car_models['model_messy'] = car_models.index
+car_models['model_clean'] = car_models['model_messy'].apply(lambda x : str(x).translate(dict.fromkeys(map(ord, u"(,')"))))
+car_models = car_models.set_index(['model_clean'])
+car_models['model'] = car_models.index
+
+mpg_bhp_data = []
+
+fuel_types = ['Volkswagen','Audi']
+
+for fuel_type in fuel_types: 
+    fuel_type_data = car_models['make'] == fuel_type
+    mpg_bhp_data.append(go.Scatter(mode="markers",
+                              y=car_models[fuel_type_data]['EC Combined (mpg)'],
+                              x=car_models[fuel_type_data]['0 to 62 mph (secs)'],
+                              text=car_models[fuel_type_data]['model'],
+                              name=fuel_type))
+
+mpg_bhp_layout = go.Layout(
+        title = "MPG by 0-60",
+        hovermode = "closest",
+        showlegend = True,
+        yaxis=dict(range=[0, 150],title="MPG"),
+        xaxis=dict(title="0-60 (secs)"))
+
+fig = go.Figure(data = mpg_bhp_data, layout = mpg_bhp_layout)
+
+py.plot(fig)
+
 # Print the total unique car count
-total_rows = car_data['vehicle_id'].count()
-unique_cars = car_data['vehicle_title'].nunique()
-print("Total Records: %s  Total Unique Cars: %s (%s%%)" 
-      % (total_rows, unique_cars, round((unique_cars / total_rows) * 100, 1)))
+#total_rows = car_data['vehicle_id'].count()
+#title_count = car_data['vehicle_title'].nunique()
+#print("Total Records: %s  Total Car Titles: %s (%s%%)" 
+#      % (total_rows, title_count, round((title_count / total_rows) * 100, 1)))
+#
+#print("Total Records: %s  Total Car Models: %s (%s%%)" 
+#      % (total_rows, len(car_models), round((len(car_models) / total_rows) * 100, 1)))
+
+#car_models.plot(kind='scatter',x='Engine Power - BHP',y='EC Combined (mpg)', ylim=[10,500])
 
 # Count of cars by year
 #car_data['vehicle_year'].value_counts().sort_index().plot(kind='bar', rot=45, figsize=[14, 6])
@@ -68,10 +117,7 @@ all_stats = car_data.describe()
 #fig = ax.get_figure()
 #fig.savefig('car_make_prices.png')
 
-years = car_data.groupby(['vehicle_make'])['vehicle_year'].describe().unstack()
-
-tmp = car_data.groupby(['dealer_name']).mean()
-
+#years = car_data.groupby(['vehicle_make'])['vehicle_year'].describe().unstack()
 
 
 

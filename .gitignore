@@ -2,9 +2,13 @@
 #car_stats/data/**/*
 car_stats/logs/**/*
 car_stats/__pycache__/**/*
+car_stats/temp-plot.html
 
 # tutorials
 tutorials/data/**/*
 
 # whatsapp
 whatsapp/data/**/*
+
+#transactions
+transactions/data/**/*
