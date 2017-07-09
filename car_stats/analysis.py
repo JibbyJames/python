@@ -30,15 +30,9 @@ car_data = car_data[main_cols]
 car_data["id"] = car_data["vehicle_id"]
 car_data = car_data.set_index(['id'])
 
-# Show with a scatter graph, the range in id values we have looked through
-#new_index = list(range(min_id, max_id))
-#car_data_nans = car_data.reindex(new_index)
-#car_data_nans["not_null"] = car_data_nans["vehicle_id"].notnull()
-#car_data_nans['index1'] = car_data_nans.index
-#hmm = car_data_nans[["index1", "not_null"]]
-#hmm.plot(kind="scatter", x="index1", y="not_null", figsize=(15,5))
-
+#==============================================================================
 # car_models contains a list of unique car models, rather than motors.co.uk records
+#==============================================================================
 car_data['year'] = car_data['vehicle_year']
 car_data['make'] = car_data['vehicle_make']
 car_data['model'] = car_data['vehicle_model']
@@ -50,32 +44,30 @@ car_models = car_models[~car_models.index.duplicated(keep='first')]
 car_models['model_messy'] = car_models.index
 car_models['model_clean'] = car_models['model_messy'].apply(lambda x : str(x).translate(dict.fromkeys(map(ord, u"(,')"))))
 car_models = car_models.set_index(['model_clean'])
-car_models['model'] = car_models.index
+car_models['model_full'] = car_models.index
 
-mpg_bhp_data = []
+polo_id = 45773053
+my_polo = car_models[car_models['vehicle_id'] == polo_id]
 
-fuel_types = ['Volkswagen','Audi']
+all_stats = car_data.describe()
+#==============================================================================
 
-for fuel_type in fuel_types: 
-    fuel_type_data = car_models['make'] == fuel_type
-    mpg_bhp_data.append(go.Scatter(mode="markers",
-                              y=car_models[fuel_type_data]['EC Combined (mpg)'],
-                              x=car_models[fuel_type_data]['0 to 62 mph (secs)'],
-                              text=car_models[fuel_type_data]['model'],
-                              name=fuel_type))
 
-mpg_bhp_layout = go.Layout(
-        title = "MPG by 0-60",
-        hovermode = "closest",
-        showlegend = True,
-        yaxis=dict(range=[0, 150],title="MPG"),
-        xaxis=dict(title="0-60 (secs)"))
+#==============================================================================
+# Show with a scatter graph, the range in id values we have looked through
+#==============================================================================
+#new_index = list(range(min_id, max_id))
+#car_data_nans = car_data.reindex(new_index)
+#car_data_nans["not_null"] = car_data_nans["vehicle_id"].notnull()
+#car_data_nans['index1'] = car_data_nans.index
+#hmm = car_data_nans[["index1", "not_null"]]
+#hmm.plot(kind="scatter", x="index1", y="not_null", figsize=(15,5))
+#==============================================================================
 
-fig = go.Figure(data = mpg_bhp_data, layout = mpg_bhp_layout)
 
-py.plot(fig)
-
+#==============================================================================
 # Print the total unique car count
+#==============================================================================
 #total_rows = car_data['vehicle_id'].count()
 #title_count = car_data['vehicle_title'].nunique()
 #print("Total Records: %s  Total Car Titles: %s (%s%%)" 
@@ -83,9 +75,90 @@ py.plot(fig)
 #
 #print("Total Records: %s  Total Car Models: %s (%s%%)" 
 #      % (total_rows, len(car_models), round((len(car_models) / total_rows) * 100, 1)))
+#==============================================================================
 
-#car_models.plot(kind='scatter',x='Engine Power - BHP',y='EC Combined (mpg)', ylim=[10,500])
 
+#==============================================================================
+# MPG by BHP - Audi and VW as series
+#==============================================================================
+
+#mpg_bhp_data = []
+#
+#make_types = ['Volkswagen','Audi']
+#
+#for make in make_types: 
+#    make_data = car_models['make'] == make
+#    mpg_bhp_data.append(go.Scatter(mode="markers",
+#                              y=car_models[make_data]['EC Combined (mpg)'],
+#                              x=car_models[make_data]['0 to 62 mph (secs)'],
+#                              text=car_models[make_data]['model'],
+#                              name=make))
+#
+#mpg_bhp_layout = go.Layout(
+#        title = "MPG by 0-60",
+#        hovermode = "closest",
+#        showlegend = True,
+#        yaxis=dict(title="MPG"),
+#        xaxis=dict(title="0-60 (secs)"))
+#
+#fig = go.Figure(data = mpg_bhp_data, layout = mpg_bhp_layout)
+#
+#py.plot(fig)
+
+#==============================================================================
+
+
+#==============================================================================
+# My Polo shown in a variety of graphs
+#==============================================================================
+
+polo_speed = my_polo['0 to 62 mph (secs)'][0]
+polo_mpg = my_polo['EC Combined (mpg)'][0]
+
+df_other_cars = car_models.drop(car_models.index[car_models['vehicle_id'] == polo_id])
+df_better_cars = df_other_cars[(df_other_cars['0 to 62 mph (secs)'] < (polo_speed / 2))
+                                & (df_other_cars['EC Combined (mpg)'] >= polo_mpg)]
+
+better_car_ratio = df_better_cars['make'].value_counts() / df_other_cars['make'].value_counts()
+
+df_other_cars = df_other_cars.drop(df_better_cars.index)
+
+
+df_better_cars.to_csv("better_cars.csv")
+
+scatter_data = []
+
+scatter_data.append(go.Scatter(mode="markers",
+                               y=df_other_cars['EC Combined (mpg)'],
+                               x=df_other_cars['0 to 62 mph (secs)'],
+                               text=df_other_cars['model_full'],
+                               name="Slow Cars"))
+
+scatter_data.append(go.Scatter(mode="markers",
+                               y=df_better_cars['EC Combined (mpg)'],
+                               x=df_better_cars['0 to 62 mph (secs)'],
+                               text=df_better_cars['model_full'],
+                               name="Better Cars"))
+
+scatter_data.append(go.Scatter(mode="markers",
+                               name="My Polo",
+                               y=my_polo['EC Combined (mpg)'],
+                               x=my_polo['0 to 62 mph (secs)'],
+                               text="My Polo: " + my_polo["model_full"],
+                               marker=dict(color='rgba(0, 0, 0)', size=15)))
+
+scatter_layout = dict(hovermode='closest',
+              title='0-60 by MPG - My Polo vs Others',
+              xaxis=dict(title='0-60'),
+              yaxis=dict(title='MPG'))
+
+fig = dict(data=scatter_data, layout=scatter_layout)
+
+plotly.offline.plot(fig, filename="figures\\My Polo - 0-60 by MPG - 100% Quicker & Improved MPG.html");
+
+#==============================================================================
+# Older plots - might need later
+#==============================================================================
 # Count of cars by year
 #car_data['vehicle_year'].value_counts().sort_index().plot(kind='bar', rot=45, figsize=[14, 6])
 
@@ -93,7 +166,7 @@ py.plot(fig)
 #price_by_year = car_data.sample(2000).pivot_table(index="vehicle_id", columns='vehicle_year', values="vehicle_price", aggfunc='mean')
 #price_by_year.plot(kind='box', figsize=[12,8], stacked=True, colormap='Accent', rot=45, logy=True)
 
-all_stats = car_data.describe()
+
 #top_25 = 20000 #price_stats[6]
 #expensive_cars = car_data[car_data['vehicle_price'] >= top_25]
 #cars_by_make = pd.concat([car_data['vehicle_make'].value_counts(), 
@@ -118,7 +191,7 @@ all_stats = car_data.describe()
 #fig.savefig('car_make_prices.png')
 
 #years = car_data.groupby(['vehicle_make'])['vehicle_year'].describe().unstack()
-
+#==============================================================================
 
 
 
