@@ -1,5 +1,6 @@
 # car_stats
-#car_stats/data/**/*
+car_stats/data/**/*.json
+car_stats/data/**/*.csv
 car_stats/logs/**/*
 car_stats/__pycache__/**/*
 car_stats/temp-plot.html
@@ -12,3 +13,7 @@ whatsapp/data/**/*
 
 #transactions
 transactions/data/**/*
+
+#webtrends
+webtrends/data/**/*
+webtrends/output/**/*

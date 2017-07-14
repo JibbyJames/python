@@ -12,18 +12,19 @@ from bs4 import BeautifulSoup
 cars_dir = os.getcwd() + "\\data\\car_jsons\\"
 car_logfile = os.getcwd() + "\\logs\\cars_2.log"
 
-start_id = 45000000
+start_id = 45700000
 total_id_count = 100000
 chunk_size = 1000
 num_of_chunks = int(total_id_count / chunk_size)
-time_range_min = 0.5
-time_range_max = 1.5
+time_range_min = 0.25
+time_range_max = 0.5
+start_chunk = 13
 
-count = 0;
-delay_total = 0;
-four_o_fours = 0;
-no_specs = 0;
-invalid_json = 0;
+count = 0
+delay_total = 0
+four_o_fours = 0
+no_specs = 0
+invalid_json = 0
 
 script_prefix = "m.Store.dispatch( m.Action('setVehicle')("
 
@@ -77,7 +78,7 @@ for chunk in range(0, num_of_chunks):
     random.shuffle(car_ids[chunk])
 
 # Loop through [total_id_count] car ids, in [chunk_size] chunk sizes.
-for chunk in range(0, int(total_id_count / chunk_size)): 
+for chunk in range(start_chunk, int(total_id_count / chunk_size)): 
     
     chunk_filename = "%s_%s_%s_%s" % (start_id, (start_id + total_id_count),
                                       chunk, int(total_id_count / chunk_size))
